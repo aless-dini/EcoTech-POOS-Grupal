@@ -1,0 +1,1 @@
+from dominio.usuario import Usuario
