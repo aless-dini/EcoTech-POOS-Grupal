@@ -3,7 +3,17 @@ class Proyecto :
         self.nombre = nombre
         self.descripcion = descripcion
         self.fechaInicio = fechaInicio
+        self._empleados: list = []
 
-    def mostrar_datos(self) -> str:
-        return f"{self.nombre} - {self.asignarEmpleado}"
+    def asignar_empleado(self, empleado) -> bool:
+        if empleado in self._empleados:
+            return False
+        self._empleados.append(empleado)
+        return True
+ 
+    def eliminar_empleado(self, empleado) -> bool:
+        if empleado not in self._empleados:
+            return False
+        self._empleados.remove(empleado)
+        return True
 
