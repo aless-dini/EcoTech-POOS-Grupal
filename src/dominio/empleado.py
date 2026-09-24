@@ -2,7 +2,7 @@ from dominio.registroTiempo import RegistroTiempo
 from dominio.proyecto import Proyecto
 
 class Empleado:
-    def __init__(self, id: int, nombre: str, direccion: str, numeracion: int, numero: int, correo: str, salario: float, inicioContrato: str):
+    def __init__(self, id: None, nombre: str, direccion: str, numeracion: int, numero: int, correo: str, salario: float, inicioContrato: str):
         self.id = id,
         self.nombre = nombre,
         self.direccion = direccion,
