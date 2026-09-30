@@ -2,7 +2,7 @@ from dominio.registroTiempo import RegistroTiempo
 from dominio.proyecto import Proyecto
 
 class Empleado:
-    def __init__(self, id: None, nombre: str, direccion: str, numeracion: int, numero: int, correo: str, salario: float, inicioContrato: str):
+    def __init__(self, nombre: str, direccion: str, numeracion: int, numero: int, correo: str, salario: float, inicioContrato: str,  id = None):
         self.id = id,
         self.nombre = nombre,
         self.direccion = direccion,
@@ -14,6 +14,12 @@ class Empleado:
         self._registro_tiempo:list[RegistroTiempo] = []
         self._proyectos: list[Proyecto] = []
         self._departamentos: list = []
+
+    def mostrar_datos(self) -> str:
+        print(f"Id {self.id}, Nombre {self.nombre}, Correo {self.correo}")
+
+    def actualizar_nombre(self, nombre):
+         self.nombre = nombre
 
     def registrar_tiempo(self, rg:RegistroTiempo) -> bool:
         if rg in self._registro_tiempo:
