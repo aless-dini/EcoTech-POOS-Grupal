@@ -1,4 +1,5 @@
 from persistencia.conexion import (abrir_conexion,obtener_motor )
+
 def crear_tablas():
     conexion = abrir_conexion()
     cursor = conexion.cursor()
@@ -7,7 +8,7 @@ def crear_tablas():
             CREATE TABLE IF NOT EXISTS empleado (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL,
-            correo TEXT NOT NULL
+            correo TEXT NOT NULL,
             )
         '''
     else:
@@ -15,12 +16,18 @@ def crear_tablas():
             CREATE TABLE IF NOT EXISTS empleado (
             id INT PRIMARY KEY AUTO_INCREMENT,
             nombre VARCHAR(100) NOT NULL,
-            correo VARCHAR(150) NOT NULL
+            direccion VARCHAR(100) NOT NULL,
+            numeracion INT(30) NOT NULL,
+            telefono INT(30) NOT NULL,
+            correo VARCHAR(150) NOT NULL,
+            salario FLOAT(150) NOT NULL,
+            inicioContrato VARCHAR(150) NOT NULL
             )
         '''
     cursor.execute(sql)
     conexion.commit()
     conexion.close()
+
 if __name__ == "__main__":
     crear_tablas()
     print("Base de datos preparada correctamente.")

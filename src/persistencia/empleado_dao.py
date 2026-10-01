@@ -8,15 +8,36 @@ class EmpleadoDAO:
         marcador = "?" if obtener_motor() == "sqlite" else "%s"
 
         sql = f"""
-            INSERT INTO empleado (nombre, correo)
-            VALUES ({marcador}, {marcador})
+            INSERT INTO empleado (nombre, direccion, numeracion, telefono, correo, salario, inicioContrato)
+            VALUES ({marcador}, {marcador}, {marcador}, {marcador}, {marcador}, {marcador}, {marcador})
         """
 
-        cursor.execute(sql, (empleado.nombre, empleado.correo))
+        cursor.execute(sql, (empleado.nombre, empleado.direccion, empleado.numeracion, empleado.telefono, empleado.correo, empleado.salario, empleado.inicioContrato))
         empleado.id = cursor.lastrowid
         conexion.commit()
         conexion.close()
         return empleado
+
+    @staticmethod
+    def buscar_por_id(id_empleado):
+        conexion = abrir_conexion()
+        cursor = conexion.cursor()
+    
+        marca = marcador_sql()
+        sql = f"""
+                SELECT id, nombre, correo
+                FROM empleado WHERE id = {marca}
+            """
+    
+        cursor.execute(sql, (id_empleado,))
+        fila = cursor.fetchone()
+        conexion.close()
+    
+        if fila is None:
+            return None
+    
+        return Empleado(id=fila[0], nombre=fila[1], correo=fila[2])
+
     
     @staticmethod
     def actualizar(empleado):
