@@ -56,6 +56,7 @@ def main():
 
                 elif opcion == "2":
                     listar_empleados()
+<<<<<<< HEAD
 
                 elif opcion == "3":
                     buscar_empleado()
@@ -80,3 +81,30 @@ def main():
 if __name__ == "__main__":
     crear_tablas()
     main()
+=======
+
+                elif opcion == "3":
+                    buscar_empleado()
+
+                elif opcion == "4":
+                    actualizar_empleado()
+
+                elif opcion == "5":
+                    eliminar_empleado()
+
+                elif opcion == "6":
+                    break
+            
+                else:
+                    print("Seleccione una opción válida")
+
+        elif opcion == "6":
+            print("Hasta luego!")
+        else:
+            print("Seleccione una opción válida")
+
+if __name__ == "__main__":
+    crear_tablas()
+    main()
+
+>>>>>>> 9bfbd7a46872bec30de45c6a0ce2ad0f571be8e1
