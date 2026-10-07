@@ -20,7 +20,7 @@ def crear_tablas():
             numeracion INT(30) NOT NULL,
             telefono INT(30) NOT NULL,
             correo VARCHAR(150) NOT NULL,
-            salario FLOAT(150) NOT NULL,
+            salario INT(150) NOT NULL,
             inicioContrato VARCHAR(150) NOT NULL
             )
         '''

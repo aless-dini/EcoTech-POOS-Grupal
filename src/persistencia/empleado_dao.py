@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 from dominio.empleado import Empleado
-=======
-from modelo.empleado import Empleado
->>>>>>> 9bfbd7a46872bec30de45c6a0ce2ad0f571be8e1
 from persistencia.conexion import abrir_conexion, marcador_sql
  
 # Orden de columnas usado en todos los SELECT
@@ -39,13 +35,12 @@ class EmpleadoDAO:
             marca = marcador_sql()
             sql = f"""
                 INSERT INTO empleado
-                    (nombre, direccion, numeracion, telefono, correo, salario, inicioContrato)
-                VALUES ({marca}, {marca}, {marca}, {marca}, {marca}, {marca}, {marca})
+                    (nombre, direccion, telefono, correo, salario, inicioContrato)
+                VALUES ({marca}, {marca}, {marca}, {marca}, {marca}, {marca})
             """
             cursor.execute(sql, (
                 empleado.nombre,
                 empleado.direccion,
-                empleado.numeracion,
                 empleado.telefono,
                 empleado.correo,
                 empleado.salario,
@@ -248,7 +243,3 @@ class EmpleadoDAO:
         finally:
             if conexion is not None:
                 conexion.close()
-<<<<<<< HEAD
-   
-=======
->>>>>>> 9bfbd7a46872bec30de45c6a0ce2ad0f571be8e1
