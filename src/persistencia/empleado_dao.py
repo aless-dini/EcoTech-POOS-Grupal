@@ -59,27 +59,6 @@ class EmpleadoDAO:
                 conexion.close()
  
     @staticmethod
-    def buscar_por_id(id_empleado):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"SELECT {COLUMNAS} FROM empleado WHERE id = {marca}"
-            cursor.execute(sql, (id_empleado,))
-            fila = cursor.fetchone()
- 
-            if fila is None:
-                return None
-            return _fila_a_empleado(fila)
-        except Exception as e:
-            print(f"Error al buscar el empleado por id: {e}")
-            return None
-        finally:
-            if conexion is not None:
-                conexion.close()
- 
-    @staticmethod
     def actualizar(empleado):
         conexion = None
         try:
@@ -88,7 +67,7 @@ class EmpleadoDAO:
             marca = marcador_sql()
             sql = (
                 "UPDATE empleado "
-                f"SET nombre = {marca}, direccion = {marca}, numeracion = {marca}, "
+                f"SET nombre = {marca}, direccion = {marca}, "
                 f"telefono = {marca}, correo = {marca}, salario = {marca}, "
                 f"inicioContrato = {marca} "
                 f"WHERE id = {marca}"
@@ -96,7 +75,6 @@ class EmpleadoDAO:
             cursor.execute(sql, (
                 empleado.nombre,
                 empleado.direccion,
-                empleado.numeracion,
                 empleado.telefono,
                 empleado.correo,
                 empleado.salario,
@@ -151,23 +129,23 @@ class EmpleadoDAO:
         finally:
             if conexion is not None:
                 conexion.close()
- 
+
     @staticmethod
-    def buscar_por_correo(correo):
+    def buscar_por_id(id_empleado):
         conexion = None
         try:
             conexion = abrir_conexion()
             cursor = conexion.cursor()
             marca = marcador_sql()
-            sql = f"SELECT {COLUMNAS} FROM empleado WHERE correo = {marca}"
-            cursor.execute(sql, (correo,))
+            sql = f"SELECT {COLUMNAS} FROM empleado WHERE id = {marca}"
+            cursor.execute(sql, (id_empleado,))
             fila = cursor.fetchone()
  
             if fila is None:
                 return None
             return _fila_a_empleado(fila)
         except Exception as e:
-            print(f"Error al buscar el empleado por correo: {e}")
+            print(f"Error al buscar el empleado por id: {e}")
             return None
         finally:
             if conexion is not None:

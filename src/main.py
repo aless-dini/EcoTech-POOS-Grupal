@@ -24,15 +24,9 @@ def main():
                     registrar_empleado()
 
                 elif opcion == "2":
-                    listar_empleados()
-
-                elif opcion == "3":
-                    buscar_empleado()
-
-                elif opcion == "4":
                     actualizar_empleado()
 
-                elif opcion == "5":
+                elif opcion == "3":
                     eliminar_empleado()
 
                 elif opcion == "6":
@@ -52,4 +46,5 @@ def main():
 
 if __name__ == "__main__":
     crear_tablas()
+    print("Base de datos preparada correctamente.")
     main()
