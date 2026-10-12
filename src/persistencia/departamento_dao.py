@@ -1,23 +1,16 @@
 from dominio.departamento import Departamento
 from persistencia.conexion import abrir_conexion, marcador_sql
 
-# Orden de columnas usado en todos los SELECT
 COLUMNAS = "id, nombre, id_gerente"
 
-
 def _fila_a_departamento(fila):
-    """Convierte una fila de la BD en un objeto Departamento."""
     return Departamento(
         id=fila[0],
         nombre=fila[1],
         id_gerente=fila[2],
     )
 
-
 class DepartamentoDAO:
-    """Acceso a datos de Departamento.
-    Si ocurre un error, el método lo informa por pantalla y devuelve un valor
-    seguro (None, False o []) en vez de dejar caer el programa."""
 
     @staticmethod
     def insertar(departamento):

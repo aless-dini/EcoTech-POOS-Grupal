@@ -1,31 +1,21 @@
 from dominio.empleado import Empleado
 from persistencia.conexion import abrir_conexion, marcador_sql
  
-# Orden de columnas usado en todos los SELECT
-COLUMNAS = "id, nombre, direccion, numeracion, telefono, correo, salario, inicioContrato, id_departamento"
- 
+COLUMNAS = "id, nombre, direccion, telefono, correo, salario, inicioContrato, id_departamento"
  
 def _fila_a_empleado(fila):
-    """Convierte una fila de la BD en un objeto Empleado."""
     return Empleado(
         id=fila[0],
         nombre=fila[1],
         direccion=fila[2],
-        numeracion=fila[3],
-        telefono=fila[4],
-        correo=fila[5],
-        salario=fila[6],
-        inicioContrato=fila[7],
-        id_departamento=fila[8],
+        telefono=fila[3],
+        correo=fila[4],
+        salario=fila[5],
+        inicioContrato=fila[6],
+        id_departamento=fila[7],
     )
  
- 
 class EmpleadoDAO:
-    """Acceso a datos de Empleado.
-    Si ocurre un error, el método lo informa por pantalla y devuelve un valor
-    seguro (None, False, [] o 0) en vez de dejar caer el programa."""
- 
-    # ===================== CRUD (los del profe) =====================
  
     @staticmethod
     def insertar(empleado):
@@ -36,13 +26,12 @@ class EmpleadoDAO:
             marca = marcador_sql()
             sql = f"""
                 INSERT INTO empleado
-                    (nombre, direccion, numeracion, telefono, correo, salario, inicioContrato, id_departamento)
-                VALUES ({marca}, {marca}, {marca}, {marca}, {marca}, {marca}, {marca}, {marca})
+                    (nombre, direccion, telefono, correo, salario, inicioContrato, id_departamento)
+                VALUES ({marca}, {marca}, {marca}, {marca}, {marca}, {marca}, {marca})
             """
             cursor.execute(sql, (
                 empleado.nombre,
                 empleado.direccion,
-                empleado.numeracion,
                 empleado.telefono,
                 empleado.correo,
                 empleado.salario,
@@ -70,7 +59,7 @@ class EmpleadoDAO:
             marca = marcador_sql()
             sql = (
                 "UPDATE empleado "
-                f"SET nombre = {marca}, direccion = {marca}, numeracion = {marca}, "
+                f"SET nombre = {marca}, direccion = {marca}, "
                 f"telefono = {marca}, correo = {marca}, salario = {marca}, "
                 f"inicioContrato = {marca}, id_departamento = {marca} "
                 f"WHERE id = {marca}"
@@ -78,7 +67,6 @@ class EmpleadoDAO:
             cursor.execute(sql, (
                 empleado.nombre,
                 empleado.direccion,
-                empleado.numeracion,
                 empleado.telefono,
                 empleado.correo,
                 empleado.salario,
@@ -116,9 +104,7 @@ class EmpleadoDAO:
         finally:
             if conexion is not None:
                 conexion.close()
- 
-    # ===================== Métodos adicionales =====================
- 
+
     @staticmethod
     def listar_todos():
         conexion = None
@@ -158,15 +144,12 @@ class EmpleadoDAO:
  
     @staticmethod
     def buscar_por_nombre(nombre):
-        """Busca por palabras completas sin distinguir mayúsculas:
-        'ana' encuentra 'Ana Pérez', pero no 'Mariana'."""
         conexion = None
         try:
             conexion = abrir_conexion()
             cursor = conexion.cursor()
             cursor.execute(f"SELECT {COLUMNAS} FROM empleado ORDER BY id")
             filas = cursor.fetchall()
-            # Se compara en Python porque LOWER() de SQLite no convierte letras con tilde
             buscadas = nombre.casefold().split()
             return [
                 _fila_a_empleado(f) for f in filas
@@ -181,7 +164,6 @@ class EmpleadoDAO:
  
     @staticmethod
     def listar_por_departamento(id_departamento):
-        """Requiere la columna id_departamento en la tabla empleado (FK)."""
         conexion = None
         try:
             conexion = abrir_conexion()
@@ -200,7 +182,6 @@ class EmpleadoDAO:
 
     @staticmethod
     def asignar_departamento(id_empleado, id_departamento):
-        """Cambia el departamento del empleado. Con None lo deja sin departamento."""
         conexion = None
         try:
             conexion = abrir_conexion()
@@ -215,6 +196,29 @@ class EmpleadoDAO:
             if conexion is not None:
                 conexion.rollback()
             return False
+        finally:
+            if conexion is not None:
+                conexion.close()
+
+    @staticmethod
+    def listar_por_proyecto(id_proyecto):
+        conexion = None
+        try:
+            conexion = abrir_conexion()
+            cursor = conexion.cursor()
+            marca = marcador_sql()
+            columnas = ", ".join(f"e.{c.strip()}" for c in COLUMNAS.split(","))
+            sql = (
+                f"SELECT {columnas} FROM empleado e "
+                "JOIN empleado_proyecto ep ON ep.id_empleado = e.id "
+                f"WHERE ep.id_proyecto = {marca} ORDER BY e.nombre"
+            )
+            cursor.execute(sql, (id_proyecto,))
+            filas = cursor.fetchall()
+            return [_fila_a_empleado(f) for f in filas]
+        except Exception as e:
+            print(f"Error al listar empleados por proyecto: {e}")
+            return []
         finally:
             if conexion is not None:
                 conexion.close()
