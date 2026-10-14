@@ -1,95 +1,32 @@
 from dominio.departamento import Departamento
-from persistencia.conexion import abrir_conexion, marcador_sql
+from persistencia.base_dao import BaseDAO
 
-COLUMNAS = "id, nombre, id_gerente"
 
-def _fila_a_departamento(fila):
-    return Departamento(
-        id=fila[0],
-        nombre=fila[1],
-        id_gerente=fila[2],
-    )
-
-class DepartamentoDAO:
+class DepartamentoDAO(BaseDAO):
+    TABLA = "departamento"
+    COLUMNAS = "id, nombre, id_gerente"
+    NOMBRE = "el departamento"
 
     @staticmethod
-    def insertar(departamento):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"INSERT INTO departamento (nombre, id_gerente) VALUES ({marca}, {marca})"
-            cursor.execute(sql, (departamento.nombre, departamento.id_gerente))
-            departamento.id = cursor.lastrowid
-            conexion.commit()
-            return departamento
-        except Exception as e:
-            print(f"Error al insertar el departamento: {e}")
-            if conexion is not None:
-                conexion.rollback()
+    def _convertir(fila):
+        return Departamento(
+            id=fila[0],
+            nombre=fila[1],
+            id_gerente=fila[2],
+        )
+
+    @classmethod
+    def insertar(cls, departamento):
+        sql = "INSERT INTO departamento (nombre, id_gerente) VALUES (?, ?)"
+        nuevo_id = cls._insertar(sql, (departamento.nombre, departamento.id_gerente),
+                                 "insertar el departamento")
+        if nuevo_id is None:
             return None
-        finally:
-            if conexion is not None:
-                conexion.close()
+        departamento.id = nuevo_id
+        return departamento
 
-    @staticmethod
-    def eliminar(id_departamento):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"DELETE FROM departamento WHERE id = {marca}"
-            cursor.execute(sql, (id_departamento,))
-            conexion.commit()
-            return cursor.rowcount > 0
-        except Exception as e:
-            print(f"Error al eliminar el departamento: {e}")
-            if conexion is not None:
-                conexion.rollback()
-            return False
-        finally:
-            if conexion is not None:
-                conexion.close()
-
-    @staticmethod
-    def buscar_por_id(id_departamento):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"SELECT {COLUMNAS} FROM departamento WHERE id = {marca}"
-            cursor.execute(sql, (id_departamento,))
-            fila = cursor.fetchone()
-
-            if fila is None:
-                return None
-            return _fila_a_departamento(fila)
-        except Exception as e:
-            print(f"Error al buscar el departamento por id: {e}")
-            return None
-        finally:
-            if conexion is not None:
-                conexion.close()
-
-    @staticmethod
-    def actualizar(departamento):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"UPDATE departamento SET nombre = {marca}, id_gerente = {marca} WHERE id = {marca}"
-            cursor.execute(sql, (departamento.nombre, departamento.id_gerente, departamento.id))
-            conexion.commit()
-            return cursor.rowcount > 0
-        except Exception as e:
-            print(f"Error al actualizar el departamento: {e}")
-            if conexion is not None:
-                conexion.rollback()
-            return False
-        finally:
-            if conexion is not None:
-                conexion.close()
+    @classmethod
+    def actualizar(cls, departamento):
+        sql = "UPDATE departamento SET nombre = ?, id_gerente = ? WHERE id = ?"
+        parametros = (departamento.nombre, departamento.id_gerente, departamento.id)
+        return cls._ejecutar(sql, parametros, "actualizar el departamento") > 0

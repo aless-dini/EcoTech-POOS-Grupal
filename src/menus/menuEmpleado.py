@@ -7,6 +7,15 @@ from persistencia.registroTiempo_dao import RegistroTiempoDAO
 from persistencia.usuario_dao import UsuarioDAO
 from dominio.empleado import Empleado
 
+def a_entero_positivo(valor):
+    try:
+        numero = int(valor)
+    except ValueError:
+        return None
+    if numero >= 1:
+        return numero
+    return None
+
 def pedir_texto(mensaje):
     while True:
         texto = input(mensaje).strip()
@@ -30,7 +39,7 @@ def pedir_entero(mensaje, minimo=1):
 def pedir_telefono(mensaje):
     while True:
         telefono = input(mensaje).strip()
-        if telefono.isdigit() and 8 <= len(telefono) <= 12:
+        if telefono.isdecimal() and 8 <= len(telefono) <= 12:
             return int(telefono)
         print("El teléfono debe tener solo números (entre 8 y 12 dígitos), intente de nuevo.")
 
@@ -55,13 +64,21 @@ def pedir_departamento(mensaje):
         valor = input(mensaje).strip()
         if valor == "":
             return None
-        if not valor.isdigit() or int(valor) < 1:
+        id_departamento = a_entero_positivo(valor)
+        if id_departamento is None:
             print("El id del departamento debe ser un número entero positivo, intente de nuevo.")
             continue
-        if DepartamentoDAO.buscar_por_id(int(valor)) is None:
+        if DepartamentoDAO.buscar_por_id(id_departamento) is None:
             print("No existe un departamento con ese id, intente de nuevo.")
             continue
-        return int(valor)
+        return id_departamento
+
+def quitar_gerencias(id_empleado, excepto=None):
+    for departamento in DepartamentoDAO.listar_todos():
+        if departamento.id_gerente == id_empleado and departamento.id != excepto:
+            departamento.id_gerente = None
+            DepartamentoDAO.actualizar(departamento)
+            print(f"El departamento '{departamento.nombre}' quedó sin gerente")
 
 def ingresar_datos():
     nombre = pedir_texto("\nNombre: ")
@@ -107,6 +124,7 @@ def actualizar_empleado():
     empleado = Empleado(nombre, direccion, telefono, correo, salario, inicioContrato, id_departamento, idEmpleado)
 
     if EmpleadoDAO.actualizar(empleado):
+        quitar_gerencias(empleado.id, excepto=id_departamento)
         print(empleado.mostrar_datos())
         print("\nEmpleado actualizado correctamente")
     else:
@@ -127,12 +145,7 @@ def eliminar_empleado():
         ProyectoDAO.quitar_empleado(proyecto.id, empleado.id)
         print(f"Quitado del proyecto '{proyecto.nombre}'")
 
-    if empleado.id_departamento is not None:
-        departamento = DepartamentoDAO.buscar_por_id(empleado.id_departamento)
-        if departamento is not None and departamento.id_gerente == empleado.id:
-            departamento.id_gerente = None
-            DepartamentoDAO.actualizar(departamento)
-            print(f"El departamento '{departamento.nombre}' quedó sin gerente")
+    quitar_gerencias(empleado.id)
 
     for usuario in UsuarioDAO.listar_todos():
         if usuario.id_empleado == empleado.id:

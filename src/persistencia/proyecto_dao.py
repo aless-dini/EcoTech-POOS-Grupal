@@ -1,180 +1,56 @@
 from dominio.proyecto import Proyecto
-from persistencia.conexion import abrir_conexion, marcador_sql
+from persistencia.base_dao import BaseDAO
 
-COLUMNAS = "id, nombre, descripcion, fechaInicio"
 
-def _fila_a_proyecto(fila):
-    return Proyecto(
-        id=fila[0],
-        nombre=fila[1],
-        descripcion=fila[2],
-        fechaInicio=fila[3],
-    )
-
-class ProyectoDAO:
+class ProyectoDAO(BaseDAO):
+    TABLA = "proyecto"
+    COLUMNAS = "id, nombre, descripcion, fechaInicio"
+    NOMBRE = "el proyecto"
 
     @staticmethod
-    def insertar(proyecto):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"INSERT INTO proyecto (nombre, descripcion, fechaInicio) VALUES ({marca}, {marca}, {marca})"
-            cursor.execute(sql, (proyecto.nombre, proyecto.descripcion, proyecto.fechaInicio))
-            proyecto.id = cursor.lastrowid
-            conexion.commit()
-            return proyecto
-        except Exception as e:
-            print(f"Error al insertar el proyecto: {e}")
-            if conexion is not None:
-                conexion.rollback()
+    def _convertir(fila):
+        return Proyecto(
+            id=fila[0],
+            nombre=fila[1],
+            descripcion=fila[2],
+            fechaInicio=fila[3],
+        )
+
+    @classmethod
+    def insertar(cls, proyecto):
+        sql = "INSERT INTO proyecto (nombre, descripcion, fechaInicio) VALUES (?, ?, ?)"
+        parametros = (proyecto.nombre, proyecto.descripcion, proyecto.fechaInicio)
+        nuevo_id = cls._insertar(sql, parametros, "insertar el proyecto")
+        if nuevo_id is None:
             return None
-        finally:
-            if conexion is not None:
-                conexion.close()
+        proyecto.id = nuevo_id
+        return proyecto
 
-    @staticmethod
-    def actualizar(proyecto):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = (
-                "UPDATE proyecto "
-                f"SET nombre = {marca}, descripcion = {marca}, fechaInicio = {marca} "
-                f"WHERE id = {marca}"
-            )
-            cursor.execute(sql, (proyecto.nombre, proyecto.descripcion, proyecto.fechaInicio, proyecto.id))
-            conexion.commit()
-            return cursor.rowcount > 0
-        except Exception as e:
-            print(f"Error al actualizar el proyecto: {e}")
-            if conexion is not None:
-                conexion.rollback()
-            return False
-        finally:
-            if conexion is not None:
-                conexion.close()
+    @classmethod
+    def actualizar(cls, proyecto):
+        sql = "UPDATE proyecto SET nombre = ?, descripcion = ?, fechaInicio = ? WHERE id = ?"
+        parametros = (proyecto.nombre, proyecto.descripcion, proyecto.fechaInicio, proyecto.id)
+        return cls._ejecutar(sql, parametros, "actualizar el proyecto") > 0
 
-    @staticmethod
-    def eliminar(id_proyecto):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"DELETE FROM proyecto WHERE id = {marca}"
-            cursor.execute(sql, (id_proyecto,))
-            conexion.commit()
-            return cursor.rowcount > 0
-        except Exception as e:
-            print(f"Error al eliminar el proyecto: {e}")
-            if conexion is not None:
-                conexion.rollback()
-            return False
-        finally:
-            if conexion is not None:
-                conexion.close()
+    @classmethod
+    def asignar_empleado(cls, id_proyecto, id_empleado):
+        sql = "INSERT INTO empleado_proyecto (id_empleado, id_proyecto) VALUES (?, ?)"
+        return cls._ejecutar(sql, (id_empleado, id_proyecto),
+                             "asignar el empleado al proyecto") > 0
 
-    @staticmethod
-    def buscar_por_id(id_proyecto):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"SELECT {COLUMNAS} FROM proyecto WHERE id = {marca}"
-            cursor.execute(sql, (id_proyecto,))
-            fila = cursor.fetchone()
+    @classmethod
+    def quitar_empleado(cls, id_proyecto, id_empleado):
+        sql = "DELETE FROM empleado_proyecto WHERE id_empleado = ? AND id_proyecto = ?"
+        return cls._ejecutar(sql, (id_empleado, id_proyecto),
+                             "quitar el empleado del proyecto") > 0
 
-            if fila is None:
-                return None
-            return _fila_a_proyecto(fila)
-        except Exception as e:
-            print(f"Error al buscar el proyecto por id: {e}")
-            return None
-        finally:
-            if conexion is not None:
-                conexion.close()
-
-    @staticmethod
-    def listar_todos():
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            cursor.execute(f"SELECT {COLUMNAS} FROM proyecto ORDER BY id")
-            filas = cursor.fetchall()
-            return [_fila_a_proyecto(f) for f in filas]
-        except Exception as e:
-            print(f"Error al listar los proyectos: {e}")
-            return []
-        finally:
-            if conexion is not None:
-                conexion.close()
-
-
-    @staticmethod
-    def asignar_empleado(id_proyecto, id_empleado):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"INSERT INTO empleado_proyecto (id_empleado, id_proyecto) VALUES ({marca}, {marca})"
-            cursor.execute(sql, (id_empleado, id_proyecto))
-            conexion.commit()
-            return True
-        except Exception as e:
-            print(f"Error al asignar el empleado al proyecto: {e}")
-            if conexion is not None:
-                conexion.rollback()
-            return False
-        finally:
-            if conexion is not None:
-                conexion.close()
-
-    @staticmethod
-    def quitar_empleado(id_proyecto, id_empleado):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            sql = f"DELETE FROM empleado_proyecto WHERE id_empleado = {marca} AND id_proyecto = {marca}"
-            cursor.execute(sql, (id_empleado, id_proyecto))
-            conexion.commit()
-            return cursor.rowcount > 0
-        except Exception as e:
-            print(f"Error al quitar el empleado del proyecto: {e}")
-            if conexion is not None:
-                conexion.rollback()
-            return False
-        finally:
-            if conexion is not None:
-                conexion.close()
-
-    @staticmethod
-    def listar_por_empleado(id_empleado):
-        conexion = None
-        try:
-            conexion = abrir_conexion()
-            cursor = conexion.cursor()
-            marca = marcador_sql()
-            columnas = ", ".join(f"p.{c.strip()}" for c in COLUMNAS.split(","))
-            sql = (
-                f"SELECT {columnas} FROM proyecto p "
-                "JOIN empleado_proyecto ep ON ep.id_proyecto = p.id "
-                f"WHERE ep.id_empleado = {marca} ORDER BY p.id"
-            )
-            cursor.execute(sql, (id_empleado,))
-            filas = cursor.fetchall()
-            return [_fila_a_proyecto(f) for f in filas]
-        except Exception as e:
-            print(f"Error al listar los proyectos del empleado: {e}")
-            return []
-        finally:
-            if conexion is not None:
-                conexion.close()
+    @classmethod
+    def listar_por_empleado(cls, id_empleado):
+        columnas = ", ".join(f"p.{c.strip()}" for c in cls.COLUMNAS.split(","))
+        sql = (
+            f"SELECT {columnas} FROM proyecto p "
+            "JOIN empleado_proyecto ep ON ep.id_proyecto = p.id "
+            "WHERE ep.id_empleado = ? ORDER BY p.id"
+        )
+        filas = cls._consultar(sql, (id_empleado,), "listar los proyectos del empleado")
+        return [cls._convertir(fila) for fila in filas]

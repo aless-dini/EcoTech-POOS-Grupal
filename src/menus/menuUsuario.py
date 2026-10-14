@@ -3,7 +3,7 @@ from getpass import getpass
 from dominio.usuario import Usuario
 from persistencia.usuario_dao import UsuarioDAO
 from persistencia.empleado_dao import EmpleadoDAO
-from menus.menuEmpleado import pedir_texto
+from menus.menuEmpleado import pedir_texto, a_entero_positivo
 
 ROLES = ("administrador", "empleado")
 
@@ -33,13 +33,14 @@ def pedir_empleado_opcional(mensaje):
         valor = input(mensaje).strip()
         if valor == "":
             return None
-        if not valor.isdigit() or int(valor) < 1:
+        id_empleado = a_entero_positivo(valor)
+        if id_empleado is None:
             print("El id del empleado debe ser un número entero positivo, intente de nuevo.")
             continue
-        if EmpleadoDAO.buscar_por_id(int(valor)) is None:
+        if EmpleadoDAO.buscar_por_id(id_empleado) is None:
             print("No existe un empleado con ese id, intente de nuevo.")
             continue
-        return int(valor)
+        return id_empleado
 
 def crear_usuario_con_contraseña(nombre, rol, id_empleado, id=None):
     while True:

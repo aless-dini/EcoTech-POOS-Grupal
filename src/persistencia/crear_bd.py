@@ -59,7 +59,7 @@ def crear_tablas():
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 nombre VARCHAR(100) NOT NULL,
                 id_gerente INT
-            )""",
+            ) ENGINE=InnoDB""",
             """CREATE TABLE IF NOT EXISTS empleado (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 id_departamento INT,
@@ -70,20 +70,20 @@ def crear_tablas():
                 salario INT NOT NULL,
                 inicioContrato VARCHAR(150) NOT NULL,
                 FOREIGN KEY (id_departamento) REFERENCES departamento(id)
-            )""",
+            ) ENGINE=InnoDB""",
             """CREATE TABLE IF NOT EXISTS proyecto (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 nombre VARCHAR(100) NOT NULL,
                 descripcion VARCHAR(300) NOT NULL,
                 fechaInicio VARCHAR(150) NOT NULL
-            )""",
+            ) ENGINE=InnoDB""",
             """CREATE TABLE IF NOT EXISTS empleado_proyecto (
                 id_empleado INT NOT NULL,
                 id_proyecto INT NOT NULL,
                 PRIMARY KEY (id_empleado, id_proyecto),
                 FOREIGN KEY (id_empleado) REFERENCES empleado(id),
                 FOREIGN KEY (id_proyecto) REFERENCES proyecto(id)
-            )""",
+            ) ENGINE=InnoDB""",
             """CREATE TABLE IF NOT EXISTS registroTiempo (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 id_empleado INT NOT NULL,
@@ -92,7 +92,7 @@ def crear_tablas():
                 horasTrabajadas DECIMAL(4,2) NOT NULL,
                 FOREIGN KEY (id_empleado) REFERENCES empleado(id),
                 FOREIGN KEY (id_proyecto) REFERENCES proyecto(id)
-            )""",
+            ) ENGINE=InnoDB""",
             """CREATE TABLE IF NOT EXISTS usuario (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 id_empleado INT,
@@ -100,7 +100,7 @@ def crear_tablas():
                 contraseña VARCHAR(100) NOT NULL,
                 rol VARCHAR (100) NOT NULL,
                 FOREIGN KEY (id_empleado) REFERENCES empleado(id)
-            )""",
+            ) ENGINE=InnoDB""",
         ]
 
     for sql in sentencias:
