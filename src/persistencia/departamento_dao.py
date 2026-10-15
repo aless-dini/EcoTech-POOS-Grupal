@@ -30,3 +30,10 @@ class DepartamentoDAO(BaseDAO):
         sql = "UPDATE departamento SET nombre = ?, id_gerente = ? WHERE id = ?"
         parametros = (departamento.nombre, departamento.id_gerente, departamento.id)
         return cls._ejecutar(sql, parametros, "actualizar el departamento") > 0
+
+    @classmethod
+    def buscar_por_nombre(cls, nombre):
+        departamentos = cls._listar_donde("nombre = ?", (nombre,), "buscar el departamento por nombre")
+        if not departamentos:
+            return None
+        return departamentos[0]

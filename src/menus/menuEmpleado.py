@@ -16,12 +16,20 @@ def a_entero_positivo(valor):
         return numero
     return None
 
-def pedir_texto(mensaje):
+def pedir_texto(mensaje, maximo = 100):
     while True:
         texto = input(mensaje).strip()
-        if texto:
-            return texto
-        print("Este campo no puede quedar vacío, intente de nuevo.")
+        if not texto:
+            print("Este campo no puede quedar vacío")
+            continue
+        elif len(texto) > maximo:
+            print("Este campo no puede tener más de {maximo} carácteres")
+            continue
+        elif not all(c.isalpha() or c == " " for c in texto):
+            print("Este campo solo acepta letras y espacios")
+            continue
+        return texto
+
 
 def pedir_entero(mensaje, minimo=1):
     while True:
@@ -36,6 +44,17 @@ def pedir_entero(mensaje, minimo=1):
             continue
         return numero
 
+def pedir_direccion(mensaje, maximo=100):
+    while True:
+        texto = input(mensaje).strip()
+        if not texto:
+            print("Este campo no puede quedar vacío")
+            continue
+        elif len(texto) > maximo:
+            print("Este campo no puede tener más de {maximo} carácteres")
+            continue
+        return texto
+
 def pedir_telefono(mensaje):
     while True:
         telefono = input(mensaje).strip()
@@ -43,12 +62,17 @@ def pedir_telefono(mensaje):
             return int(telefono)
         print("El teléfono debe tener solo números (entre 8 y 12 dígitos), intente de nuevo.")
 
-def pedir_correo(mensaje):
+def pedir_correo(mensaje, id_actual=None):
     while True:
         correo = input(mensaje).strip()
-        if re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", correo):
-            return correo
-        print("El correo no es válido (ejemplo: nombre@dominio.cl), intente de nuevo.")
+        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", correo):
+            print("El correo no es válido (ejemplo: nombre@dominio.cl), intente de nuevo.")
+            continue
+        existente = EmpleadoDAO.buscar_por_correo(correo)
+        if existente is not None and existente.id != id_actual:
+            print(f"El correo ya está registrado para {existente.nombre} (ID {existente.id}), ingrese otro.")
+            continue
+        return correo
 
 def pedir_fecha(mensaje):
     while True:
@@ -80,11 +104,11 @@ def quitar_gerencias(id_empleado, excepto=None):
             DepartamentoDAO.actualizar(departamento)
             print(f"El departamento '{departamento.nombre}' quedó sin gerente")
 
-def ingresar_datos():
+def ingresar_datos(id_actual=None):
     nombre = pedir_texto("\nNombre: ")
-    direccion = pedir_texto("Dirección (calle y número): ")
+    direccion = pedir_direccion("Dirección (calle y número): ")
     telefono = pedir_telefono("Teléfono: ")
-    correo = pedir_correo("Correo: ")
+    correo = pedir_correo("Correo: ", id_actual)
     salario = pedir_entero("Salario: ")
     inicioContrato = pedir_fecha("Inicio contrato (DD-MM-AAAA): ")
     id_departamento = pedir_departamento("Id del departamento (Enter para dejarlo sin departamento): ")
@@ -119,7 +143,7 @@ def actualizar_empleado():
 
     print("\nDatos actuales:")
     print(actual.agregar_descripcion())
-    nombre, direccion, telefono, correo, salario, inicioContrato, id_departamento = ingresar_datos()
+    nombre, direccion, telefono, correo, salario, inicioContrato, id_departamento = ingresar_datos(idEmpleado)
 
     empleado = Empleado(nombre, direccion, telefono, correo, salario, inicioContrato, id_departamento, idEmpleado)
 

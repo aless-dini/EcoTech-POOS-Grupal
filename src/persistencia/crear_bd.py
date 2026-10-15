@@ -1,5 +1,33 @@
 from persistencia.conexion import (abrir_conexion,obtener_motor )
 
+def asegurar_correo_unico(cursor):
+    # CREATE TABLE IF NOT EXISTS no modifica tablas que ya existen,
+    # por eso la restricción UNIQUE del correo se agrega aparte si falta.
+    if obtener_motor() == "sqlite":
+        cursor.execute("SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = 'uq_empleado_correo'")
+    else:
+        cursor.execute(
+            """SELECT 1 FROM information_schema.TABLE_CONSTRAINTS
+            WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = 'empleado'
+            AND CONSTRAINT_NAME = 'uq_empleado_correo'"""
+        )
+    if cursor.fetchone() is not None:
+        return
+
+    cursor.execute("SELECT correo FROM empleado GROUP BY correo HAVING COUNT(*) > 1")
+    repetidos = [fila[0] for fila in cursor.fetchall()]
+    if repetidos:
+        print("No se pudo agregar la restricción UNIQUE al correo porque hay correos repetidos:")
+        for correo in repetidos:
+            print(f"  - {correo}")
+        print("Corrija esos empleados y vuelva a iniciar el programa.")
+        return
+
+    if obtener_motor() == "sqlite":
+        cursor.execute("CREATE UNIQUE INDEX uq_empleado_correo ON empleado (correo)")
+    else:
+        cursor.execute("ALTER TABLE empleado ADD CONSTRAINT uq_empleado_correo UNIQUE (correo)")
+
 def crear_tablas():
     conexion = abrir_conexion()
     cursor = conexion.cursor()
@@ -64,18 +92,19 @@ def crear_tablas():
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 id_departamento INT,
                 nombre VARCHAR(100) NOT NULL,
-                direccion VARCHAR(150) NOT NULL,
-                telefono VARCHAR(20) NOT NULL,
-                correo VARCHAR(150) NOT NULL,
+                direccion VARCHAR(100) NOT NULL,
+                telefono INT NOT NULL,
+                correo VARCHAR(100) NOT NULL,
                 salario INT NOT NULL,
-                inicioContrato VARCHAR(150) NOT NULL,
+                inicioContrato VARCHAR(100) NOT NULL,
+                CONSTRAINT uq_empleado_correo UNIQUE (correo),
                 FOREIGN KEY (id_departamento) REFERENCES departamento(id)
             ) ENGINE=InnoDB""",
             """CREATE TABLE IF NOT EXISTS proyecto (
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 nombre VARCHAR(100) NOT NULL,
-                descripcion VARCHAR(300) NOT NULL,
-                fechaInicio VARCHAR(150) NOT NULL
+                descripcion VARCHAR(100) NOT NULL,
+                fechaInicio VARCHAR(100) NOT NULL
             ) ENGINE=InnoDB""",
             """CREATE TABLE IF NOT EXISTS empleado_proyecto (
                 id_empleado INT NOT NULL,
@@ -88,7 +117,7 @@ def crear_tablas():
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 id_empleado INT NOT NULL,
                 id_proyecto INT NOT NULL,
-                fecha VARCHAR(150) NOT NULL,
+                fecha VARCHAR(100) NOT NULL,
                 horasTrabajadas DECIMAL(4,2) NOT NULL,
                 FOREIGN KEY (id_empleado) REFERENCES empleado(id),
                 FOREIGN KEY (id_proyecto) REFERENCES proyecto(id)
@@ -105,6 +134,8 @@ def crear_tablas():
 
     for sql in sentencias:
         cursor.execute(sql)
+
+    asegurar_correo_unico(cursor)
 
     if obtener_motor() != "sqlite":
         cursor.execute(

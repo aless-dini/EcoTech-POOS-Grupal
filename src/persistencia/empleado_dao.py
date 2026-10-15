@@ -91,3 +91,10 @@ class EmpleadoDAO(BaseDAO):
         )
         filas = cls._consultar(sql, (id_proyecto,), "listar los empleados del proyecto")
         return [cls._convertir(fila) for fila in filas]
+
+    @classmethod
+    def buscar_por_correo(cls, correo):
+        empleados = cls._listar_donde("correo = ?", (correo,), "buscar el empleado por correo")
+        if not empleados:
+            return None
+        return empleados[0]
